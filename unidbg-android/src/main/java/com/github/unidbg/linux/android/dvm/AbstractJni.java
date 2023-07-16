@@ -73,8 +73,6 @@ public abstract class AbstractJni implements Jni {
                 return new StringObject(vm, SystemService.DISPLAY_SERVICE);
             case "android/content/Context->AUDIO_SERVICE:Ljava/lang/String;":
                 return new StringObject(vm, SystemService.AUDIO_SERVICE);
-            case "android/os/Build->FINGERPRINT:Ljava/lang/String;":
-                return new StringObject(vm, Build.FINGERPRINT);
             case "java/lang/Void->TYPE:Ljava/lang/Class;":
                 return vm.resolveClass("java/lang/Void");
             case "java/lang/Boolean->TYPE:Ljava/lang/Class;":

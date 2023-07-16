@@ -18,6 +18,7 @@ import java.io.File;
 /**
  * <a href="https://bbs.pediy.com/thread-263345.htm">...</a>
  * 成功模拟!
+ * 补环境 继承AbstractJni 实现getStaticObjectField等方法
  */
 public class MainActivity extends AbstractJni {
     private final AndroidEmulator emulator;
@@ -71,6 +72,16 @@ public class MainActivity extends AbstractJni {
         DvmObject<?> result = dvmClass.callStaticJniMethodObject(emulator, "sign(Ljava/lang/String;)Ljava/lang/String;", "123456");
         System.out.println("final result is => " + result.getValue());
         System.out.println((System.currentTimeMillis() - start) + "ms");
+    }
+
+    @Override
+    public DvmObject<?>  getStaticObjectField(BaseVM vm, DvmClass dvmClass, String signature) {
+        switch (signature) {
+            case "android/os/Build->FINGERPRINT:Ljava/lang/String;":
+                return new StringObject(vm, "huawei/blueline/blueline:9/PQ3A.190801.002/5670241:user/release-keys");
+        }
+
+        return super.getStaticObjectField(vm, dvmClass, signature);
     }
 
     public static void main(String[] args) {
