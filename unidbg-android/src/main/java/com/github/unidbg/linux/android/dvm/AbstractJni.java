@@ -1,14 +1,7 @@
 package com.github.unidbg.linux.android.dvm;
 
-import com.github.unidbg.linux.android.dvm.api.ApplicationInfo;
-import com.github.unidbg.linux.android.dvm.api.AssetManager;
-import com.github.unidbg.linux.android.dvm.api.Binder;
-import com.github.unidbg.linux.android.dvm.api.Bundle;
+import com.github.unidbg.linux.android.dvm.api.*;
 import com.github.unidbg.linux.android.dvm.api.ClassLoader;
-import com.github.unidbg.linux.android.dvm.api.PackageInfo;
-import com.github.unidbg.linux.android.dvm.api.ServiceManager;
-import com.github.unidbg.linux.android.dvm.api.Signature;
-import com.github.unidbg.linux.android.dvm.api.SystemService;
 import com.github.unidbg.linux.android.dvm.array.ArrayObject;
 import com.github.unidbg.linux.android.dvm.array.ByteArray;
 import com.github.unidbg.linux.android.dvm.wrapper.DvmBoolean;
@@ -80,6 +73,8 @@ public abstract class AbstractJni implements Jni {
                 return new StringObject(vm, SystemService.DISPLAY_SERVICE);
             case "android/content/Context->AUDIO_SERVICE:Ljava/lang/String;":
                 return new StringObject(vm, SystemService.AUDIO_SERVICE);
+            case "android/os/Build->FINGERPRINT:Ljava/lang/String;":
+                return new StringObject(vm, Build.FINGERPRINT);
             case "java/lang/Void->TYPE:Ljava/lang/Class;":
                 return vm.resolveClass("java/lang/Void");
             case "java/lang/Boolean->TYPE:Ljava/lang/Class;":
