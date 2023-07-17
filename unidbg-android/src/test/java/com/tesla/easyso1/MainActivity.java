@@ -19,6 +19,7 @@ import java.io.File;
  * <a href="https://bbs.pediy.com/thread-263345.htm">...</a>
  * 成功模拟!
  * 补环境 继承AbstractJni 实现getStaticObjectField等方法
+ * 参考 TTEncrypt.java 有详细注释
  */
 public class MainActivity extends AbstractJni {
     private final AndroidEmulator emulator;
