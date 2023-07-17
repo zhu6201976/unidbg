@@ -16,6 +16,12 @@ import java.io.OutputStream;
 import java.util.Random;
 import java.util.zip.GZIPOutputStream;
 
+/**
+ * 1.权限 读取本机识别码 要给权限 否则无法使用
+ * 在拨号界面输入*#06#就会有个码(设置--关于手机 也可以查看) 就像人的身份证一样
+ * IME1/MEID HEX/MEID DEC/序列号
+ * 每个手机唯一 可以用来追踪定位(公安部门)
+ */
 public class DeviceNative extends AbstractJni {
     private final AndroidEmulator emulator;
     private final VM vm;
@@ -46,7 +52,19 @@ public class DeviceNative extends AbstractJni {
      * String genAndroidId = Long.toHexString(new SecureRandom().nextLong());
      * System.out.println("genAndroidId " + genAndroidId);
      */
-    private static final String ANDROID_ID = "521a53e3f579aaf1";  // Pixel3
+    private static final String ANDROID_ID = "521a53e3f579aaf1";  // Pixel3 TODO
+
+    /**
+     * <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE"
+     * tools:ignore="ProtectedPermissions" />
+     * <uses-permission android:name="READ_PHONE_STATE" />
+     * TelephonyManager tm =(TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+     * String deviceId = tm.getDeviceId();
+     */
+    private static final String DEVICEID = "990012006431222/12";  // TODO IMEI
+
+    private static final String SIMSERIALNUMBER = "89860112851083069510";  // TODO
+
     private static final int PHONE_TYPE_GSM = 1;
 
     /**
@@ -131,6 +149,27 @@ public class DeviceNative extends AbstractJni {
     }
 
     @Override
+    public int getStaticIntField(BaseVM vm, DvmClass dvmClass, String signature) {
+        if ("android/telephony/TelephonyManager->PHONE_TYPE_GSM:I".equals(signature)) {
+            return PHONE_TYPE_GSM;
+        }
+
+        return super.getStaticIntField(vm, dvmClass, signature);
+    }
+
+    @Override
+    public DvmObject<?> getStaticObjectField(BaseVM vm, DvmClass dvmClass, String signature) {
+        System.out.println("call " + signature);
+        switch (signature) {
+//            case "android/os/Build->SERIAL:Ljava/lang/String;":
+//                return new StringObject(vm, "948X1YV56");  // 未访问
+            case "android/provider/Settings$Secure->ANDROID_ID:Ljava/lang/String;":
+                return new StringObject(vm, ANDROID_ID);
+        }
+        return super.getStaticObjectField(vm, dvmClass, signature);
+    }
+
+    @Override
     public void callVoidMethod(BaseVM vm, DvmObject<?> dvmObject, String signature, VarArg varArg) {
         switch (signature) {
             case "java/util/zip/GZIPOutputStream->write([B)V":
@@ -165,18 +204,6 @@ public class DeviceNative extends AbstractJni {
     }
 
     @Override
-    public DvmObject<?> getStaticObjectField(BaseVM vm, DvmClass dvmClass, String signature) {
-        System.out.println("call " + signature);
-        switch (signature) {
-//            case "android/os/Build->SERIAL:Ljava/lang/String;":
-//                return new StringObject(vm, "948X1YV56");  // 未访问
-            case "android/provider/Settings$Secure->ANDROID_ID:Ljava/lang/String;":
-                return new StringObject(vm, ANDROID_ID);
-        }
-        return super.getStaticObjectField(vm, dvmClass, signature);
-    }
-
-    @Override
     public void callStaticVoidMethodV(BaseVM vm, DvmClass dvmClass, String signature, VaList vaList) {
         switch (signature) {
             case "com/tencent/mars/xlog/PLog->i(Ljava/lang/String;Ljava/lang/String;)V":
@@ -200,7 +227,7 @@ public class DeviceNative extends AbstractJni {
             case "android/provider/Settings$Secure->getString(Landroid/content/ContentResolver;Ljava/lang/String;)Ljava/lang/String;":
                 StringObject key = varArg.getObjectArg(1);
                 if (ANDROID_ID.equals(key.getValue())) {
-                    return new StringObject(vm, ANDROID_ID);  // TODO
+                    return new StringObject(vm, ANDROID_ID);
                 } else {
                     System.out.println("android/provider/Settings$Secure->getString key=" + key.getValue());
                 }
@@ -216,7 +243,7 @@ public class DeviceNative extends AbstractJni {
                 String p = (String) varArg.getObjectArg(0).getValue();
                 switch (p) {
                     case "android.permission.READ_PHONE_STATE":
-                        return PERMISSION_DENIED;
+                        return PERMISSION_GRANTED;
                     default:
                         System.out.println("========== checkSelfPermission " + p);
                         return PERMISSION_DENIED;
@@ -237,8 +264,8 @@ public class DeviceNative extends AbstractJni {
                 } else {
                     return DATA_ACTIVITY_DORMANT;
                 }
-//            case "android/telephony/TelephonyManager->getPhoneType()I":
-//                return PHONE_TYPE_GSM;
+            case "android/telephony/TelephonyManager->getPhoneType()I":
+                return PHONE_TYPE_GSM;
         }
 
         return super.callIntMethod(vm, dvmObject, signature, varArg);
@@ -250,20 +277,18 @@ public class DeviceNative extends AbstractJni {
             case "android/content/Context->getSystemService(Ljava/lang/String;)Ljava/lang/Object;":
                 DvmClass clazz = vm.resolveClass("android/telephony/TelephonyManager");
                 return clazz.newObject(null);
-
-//            case "android/telephony/TelephonyManager->getDeviceId()Ljava/lang/String;":
-//                return new StringObject(vm, "353490069873368");
-//            case "android/telephony/TelephonyManager->getSimSerialNumber()Ljava/lang/String;":
-//                return new StringObject(vm, "89860112851083069510");
-
+            case "android/telephony/TelephonyManager->getDeviceId()Ljava/lang/String;":
+                return new StringObject(vm, DEVICEID);
+            case "android/telephony/TelephonyManager->getDeviceId(I)Ljava/lang/String;":
+                return new StringObject(vm, DEVICEID);
+            case "android/telephony/TelephonyManager->getSimSerialNumber()Ljava/lang/String;":
+                return new StringObject(vm, SIMSERIALNUMBER);
             case "android/telephony/TelephonyManager->getSimOperatorName()Ljava/lang/String;":
                 return new StringObject(vm, "CMCC");  // 中国移动通信
             case "android/telephony/TelephonyManager->getSimCountryIso()Ljava/lang/String;":
                 return new StringObject(vm, "cn");
-
-//            case "android/telephony/TelephonyManager->getSubscriberId()Ljava/lang/String;":
-//                return new StringObject(vm, "460013061600183");
-
+            case "android/telephony/TelephonyManager->getSubscriberId()Ljava/lang/String;":
+                return new StringObject(vm, "460013061600183");  // TODO
             case "android/telephony/TelephonyManager->getNetworkOperator()Ljava/lang/String;":
                 // 中国移动：46000 46002 中国联通：46001 中国电信：46003
                 return new StringObject(vm, "46000");
